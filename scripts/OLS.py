@@ -1,19 +1,20 @@
 #%% Preamble
-import numpy as np;
-import seaborn as sns;
-import pandas as pd
+import math
+import os
+
 import matplotlib.pyplot as plt
-from matplotlib import colors
+import numpy as np
+import pandas as pd
 import scipy as sp
 import scipy.stats as st
-import os
+import seaborn as sns
 import statsmodels.formula.api as sm
-import math
+from matplotlib import cbook, colors
+from matplotlib.colors import Normalize
 
 #%% Function
 from numpy import ma
-from matplotlib import cbook
-from matplotlib.colors import Normalize
+
 
 class MidpointNormalize(colors.Normalize):
     def __init__(self, vmin=None, vmax=None, midpoint=None, clip=False):
@@ -43,8 +44,9 @@ Area_labels = ["Business and Administration",
 
 ################################################################################
 
-#%% Something
-for coef,q in {'math':'Pquant', 'read':'Pqual'}.items():
+#%% 1b: math, read
+fig = plt.figure(figsize=(10, 4))
+for i, (coef, q) in enumerate({'math':'Pquant', 'read':'Pqual'}.items()):
     # Import estimations:
     df = pd.read_stata(os.path.join(estsdir, 'OLS_Basic2b_All_ltotinc_tc_All.dta'))
 
@@ -66,11 +68,33 @@ for coef,q in {'math':'Pquant', 'read':'Pqual'}.items():
     df = df.loc[df['_b_'+coef] > df['_b_'+coef].quantile(q=0.025)]
 
     # Plot:
-#    plt.errorbar(df['_b_'+coef],df['ratioQuant'], xerr=df['_se_'+coef]*1.96, marker=None, ls='none', label=coef, alpha=.5)
-    plt.scatter(df['_b_'+coef],df[q], c=df['t_'+coef], cmap='viridis', norm=MidpointNormalize(midpoint=1.96))
-    plt.axvline(x=0, linewidth=1, color='grey')
+    ax = fig.add_subplot(1,2,i+1)
+    scat = ax.scatter(df['_b_'+coef],df[q], c=df['t_'+coef], cmap='viridis', norm=MidpointNormalize(midpoint=1.96))
+    fig.colorbar(scat, label='$t$-stat', ticks=[math.ceil(min(df['t_'+coef])), zscore,math.floor(max(df['t_'+coef]))])
+    ax.axvline(x=0, linewidth=1, color='grey')
     plt.title(coef)
     plt.ylabel('Proportion of ' + q[1:] + ' courses')
-    plt.colorbar(label='$t$-stat', ticks=[math.ceil(min(df['t_'+coef])), zscore,math.floor(max(df['t_'+coef]))])
-    plt.tight_layout()
-    plt.show()
+
+plt.tight_layout()
+fig.subplots_adjust(wspace=.5)
+plt.show()
+
+
+
+
+
+#%% Test
+
+
+for index, (coef, q) in enumerate({'math':'Pquant', 'read':'Pqual'}.items()):
+    print(index, coef, q)
+
+#%%
+for index, (key, q) in enumerate({'math':'Pquant', 'read':'Pqual'}.items()):
+    print(index, key, q)
+
+
+
+
+for index, item in enumerate(['caca', 'peo'], start=0):   # default is zero
+    print(index, item)
