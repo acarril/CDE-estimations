@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 import scipy as sp
 import scipy.stats
 import os
-import pylab
 import statsmodels.formula.api as sm
 estsdir = 'estimations'
 inputsdir = 'inputs'
@@ -42,8 +41,8 @@ for coef in ['math']:
     df = df.sort_values(by=['Cquant'])
     df = df.reset_index(drop=True)
 #    df = df.loc[df['_b_'+coef] > df['_b_'+coef].quantile(q=0.025)]
-    plt.errorbar(df['_b_'+coef],df.index, xerr=df['_se_'+coef]*1.96, marker=None, ls='none', label=coef, alpha=.5)
-    pylab.scatter(df['_b_'+coef],df.index, c=df['signf_math'])
+    plt.errorbar(df['_b_'+coef],df['Cquant'], xerr=df['_se_'+coef]*1.96, marker=None, ls='none', label=coef, alpha=.5)
+    plt.scatter(df['_b_'+coef],df['Cquant'], c=df['signf_math'])
     plt.axvline(x=0, linewidth=1, color='grey')
     plt.legend()
     plt.tight_layout()
