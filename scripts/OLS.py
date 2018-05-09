@@ -15,6 +15,7 @@ from IPython.display import HTML
 from matplotlib import cbook, colors
 from matplotlib.colors import Normalize
 
+warnings.filterwarnings(action='once')
 
 # Class: Normalize cmap
 class MidpointNormalize(colors.Normalize):
@@ -78,38 +79,26 @@ fig = plt.figure()
 # Plot subset of coefficients
 coefs = ['math', 'math2', 'read', 'read2', 'exp', 'exp2', '1.Type', '2.Type', '3.Type']
 df2 = df[(df.coef.isin(coefs)) ]
-ax = fig.add_subplot(2,1,1)
-ax.errorbar(x=df2.beta, y=df2.coef, xerr=df2.se*zscore, ls='none', marker='o')
+plt.errorbar(x=df2.beta, y=df2.coef, xerr=df2.se*zscore, ls='none', marker='o')
 plt.axvline(x=0, linewidth=1, color='grey')
-
-
-# Plot University fixed effects
-UList = pd.read_excel(os.path.join(inputsdir, 'Lists.xls'), sheet_name='U List', header=None, index_col=0, names=['Uname'])
-df2 = df[df['coef'].str.contains('tUniv')]
-df2['Ucode'] = df2.coef.str.extract('(\d+)', expand=True)
-# df2 = df2.join(df2.coef.str.extract('(\d+)', expand=True))
-
-df2
-
-
-
-
-df2 = df2.merge(UList, left_on='tFLcode_app', right_on='FLcode_app', how='left')
-
-
-
-
-ax = fig.add_subplot(2,1,2)
-ax.errorbar(x=df2.beta, y=df2.coef, xerr=df2.se*zscore, ls='none', marker='o')
-plt.axvline(x=0, linewidth=1, color='grey')
-
 plt.tight_layout()
 plt.show()
 
+# Plot University fixed effects
+UList = pd.read_excel(os.path.join(inputsdir, 'Lists.xls'), sheet_name='U List', header=None, names=['Ucode', 'Uname'])
+UList['Uname'] = UList['Uname'].str.replace('UNIVERSIDAD', 'U.')
+df2 = df[df['coef'].str.contains('tUniv')]
+# df2['Ucode'] = df2.coef.str.extract(r'(\d+)', expand=False)
+df2 = df2.join(df2.coef.str.extract(r'(\d+)', expand=True))
+df2.rename(index=str, columns={0:'Ucode'}, inplace=True)
+df2['Ucode'] = df2['Ucode'].astype(int)
+df2 = df2.merge(UList, left_on='Ucode', right_on='Ucode', how='left')
 
+plt.errorbar(x=df2.beta, y=df2.Uname, xerr=df2.se*zscore, ls='none', marker='o')
+plt.axvline(x=0, linewidth=1, color='grey')
+plt.tight_layout()
+plt.show()
 
-UList = pd.read_excel(os.path.join(inputsdir, 'Lists.xls'), sheet_name='U List', header=None, index_col=0, names=['Univ'])
-UList
 
 
 
