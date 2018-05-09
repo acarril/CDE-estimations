@@ -1,4 +1,6 @@
 #%% Preamble
+
+# Modules:
 import math
 import os
 
@@ -12,10 +14,8 @@ import statsmodels.formula.api as sm
 from matplotlib import cbook, colors
 from matplotlib.colors import Normalize
 
-#%% Function
-from numpy import ma
 
-
+# Functions and classes:
 class MidpointNormalize(colors.Normalize):
     def __init__(self, vmin=None, vmax=None, midpoint=None, clip=False):
         self.midpoint = midpoint
@@ -27,7 +27,7 @@ class MidpointNormalize(colors.Normalize):
         x, y = [self.vmin, self.midpoint, self.vmax], [0, 0.5, 1]
         return np.ma.masked_array(np.interp(value, x, y))
 
-#%% Define important variables
+# Important variables:
 zscore = st.norm.ppf(.975) # Note that 1.96 is the zscore inside of which is 95% of the data (ignoring both tails), but st.norm.ppf() gives the zscore which has 95% of the data below it (ignoring only the upper tail).
 estsdir = 'estimations'
 inputsdir = 'inputs'
@@ -43,6 +43,26 @@ Area_labels = ["Business and Administration",
                "Technology"]
 
 ################################################################################
+
+#%% 2a
+# Import data
+df = pd.read_stata(os.path.join(estsdir,'OLS_Basic2a_All_ltotinc_tc_All.dta'))
+itr = pd.read_stata(os.path.join(estsdir,'OLS_Basic2a_All_ltotinc_tc_All.dta'), iterator = True)
+df = df.rename(index=str, columns = itr.variable_labels())
+
+df = df.T
+df.reset_index(inplace=True)
+df.rename(columns={'index': 'varname', '0': 'value'}, inplace=True)
+
+df['index'] = df['varname'].str.startswith('_se')
+df['index'] = df['index'].replace({True: 'se', False: 'beta'})
+df['varname'] = df['varname'].replace({'e(N)': 'e[N]'})
+df['coef'] = df['varname'].str.extract('((?<=\[).*(?=\]))', expand=True)
+
+df = df.pivot(index='coef', columns='index', values='value')
+df.reset_index(inplace=True)
+
+
 
 #%% 1b: math, read
 fig = plt.figure(figsize=(10, 4))
@@ -116,4 +136,6 @@ fig.subplots_adjust(wspace=.5)
 plt.show()
 
 
-df[(df['tsel_q'] == 1)]
+df = pd.read_stata(os.path.join(estsdir, 'OLS_Basic3b_All_ltotinc_tc_All.dta'))
+
+df
