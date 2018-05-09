@@ -11,6 +11,7 @@ import scipy as sp
 import scipy.stats as st
 import seaborn as sns
 import statsmodels.formula.api as sm
+from IPython.display import HTML
 from matplotlib import cbook, colors
 from matplotlib.colors import Normalize
 
