@@ -71,34 +71,59 @@ df = pd.read_stata(os.path.join(estsdir,'OLS_Basic2a_All_ltotinc_tc_All.dta'))
 itr = pd.read_stata(os.path.join(estsdir,'OLS_Basic2a_All_ltotinc_tc_All.dta'), iterator = True)
 df = df.rename(index=str, columns = itr.variable_labels())
 
-mibase = df
+df = ReshapeUnstacked(df)
 
-ReshapeUnstacked(mibase)
-
-mibase
-
-# Transpose and reshape:
-df = df.T
-df.reset_index(inplace=True)
-df.rename(columns={'index': 'varname', '0': 'value'}, inplace=True)
-df['index'] = df['varname'].str.startswith('_se')
-df['index'] = df['index'].replace({True: 'se', False: 'beta'})
-df['varname'] = df['varname'].replace({'e(N)': 'e[N]'})
-df['coef'] = df['varname'].str.extract('((?<=\[).*(?=\]))', expand=True)
-df = df.pivot(index='coef', columns='index', values='value')
-df.reset_index(inplace=True)
-
-# Remove N of obs. from rows
-N = df.at[df.loc[df['coef']=='N'].index[0], 'beta']
-df.drop(df[df.coef=='N'].index, inplace=True)
-df.reset_index(drop=True, inplace=True)
-
+## Plots
+fig = plt.figure()
 # Plot subset of coefficients
 coefs = ['math', 'math2', 'read', 'read2', 'exp', 'exp2', '1.Type', '2.Type', '3.Type']
 df2 = df[(df.coef.isin(coefs)) ]
-plt.errorbar(x=df2.beta, y=df2.coef, xerr=df2.se*zscore, ls='none', marker='o')
+ax = fig.add_subplot(2,1,1)
+ax.errorbar(x=df2.beta, y=df2.coef, xerr=df2.se*zscore, ls='none', marker='o')
 plt.axvline(x=0, linewidth=1, color='grey')
+
+
+# Plot University fixed effects
+UList = pd.read_excel(os.path.join(inputsdir, 'Lists.xls'), sheet_name='U List', header=None, index_col=0, names=['Uname'])
+df2 = df[df['coef'].str.contains('tUniv')]
+df2['Ucode'] = df2.coef.str.extract('(\d+)', expand=True)
+# df2 = df2.join(df2.coef.str.extract('(\d+)', expand=True))
+
+df2
+
+
+
+
+df2 = df2.merge(UList, left_on='tFLcode_app', right_on='FLcode_app', how='left')
+
+
+
+
+ax = fig.add_subplot(2,1,2)
+ax.errorbar(x=df2.beta, y=df2.coef, xerr=df2.se*zscore, ls='none', marker='o')
+plt.axvline(x=0, linewidth=1, color='grey')
+
+plt.tight_layout()
 plt.show()
+
+
+
+UList = pd.read_excel(os.path.join(inputsdir, 'Lists.xls'), sheet_name='U List', header=None, index_col=0, names=['Univ'])
+UList
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 #%% 1b: math, read
