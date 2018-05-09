@@ -81,20 +81,39 @@ plt.show()
 
 
 
+#%% 1c: math, read
+fig = plt.figure(figsize=(12, 4))
+for i, (coef, q) in enumerate({'math':'Pquant', 'read':'Pqual'}.items()):
+    # Import estimations:
+    df = pd.read_stata(os.path.join(estsdir, 'OLS_Basic2c_All_ltotinc_tc_All.dta'))
+
+    # Import and merge FL codes information:
+    FL = pd.read_stata(os.path.join(inputsdir, 'mallas.dta'))
+    df = df.merge(FL, left_on='tFLcode_app', right_on='FLcode_app', how='left')
+
+    # Add confidence intervals, t-stats and significance dummy:
+    df['ci_'+coef] = df['_se_'+coef]*zscore;
+    df['lb_'+coef] = df['_b_'+coef] - df['ci_'+coef]
+    df['ub_'+coef] = df['_b_'+coef] + df['ci_'+coef]
+    df['t_'+coef] = abs(df['_b_'+coef]) / df['_se_'+coef]
+    df['signf_'+coef] = (df['lb_'+coef] > 0) | (df['ub_'+coef] < 0)
+
+    # Remove outlier
+    df = df.loc[(df['_b_'+coef] > df['_b_'+coef].quantile(q=0.025)) & (df['_b_'+coef] < df['_b_'+coef].quantile(q=0.975))]
+    df = df.sort_values(by=[q])
+    df = df.reset_index(drop=True)
+
+    # Plot:
+    ax = fig.add_subplot(1,2,i+1)
+    scat = ax.scatter(df['_b_'+coef],df[q], c=df['t_'+coef], cmap='viridis', norm=MidpointNormalize(midpoint=1.96))
+    fig.colorbar(scat, label='$t$-stat', ticks=[math.ceil(min(df['t_'+coef])), zscore,math.floor(max(df['t_'+coef]))])
+    ax.axvline(x=0, linewidth=1, color='grey')
+    plt.title(coef)
+    plt.ylabel('Proportion of ' + q[1:] + ' courses')
+
+plt.tight_layout()
+fig.subplots_adjust(wspace=.5)
+plt.show()
 
 
-#%% Test
-
-
-for index, (coef, q) in enumerate({'math':'Pquant', 'read':'Pqual'}.items()):
-    print(index, coef, q)
-
-#%%
-for index, (key, q) in enumerate({'math':'Pquant', 'read':'Pqual'}.items()):
-    print(index, key, q)
-
-
-
-
-for index, item in enumerate(['caca', 'peo'], start=0):   # default is zero
-    print(index, item)
+df[(df['tsel_q'] == 1)]
