@@ -38,7 +38,7 @@ def ReshapeUnstacked(df):
     df['index'] = df['varname'].str.startswith('_se')
     df['index'] = df['index'].replace({True: 'se', False: 'beta'})
     df['varname'] = df['varname'].replace({'e(N)': 'e[N]'})
-    df['coef'] = df['varname'].str.extract('((?<=\[).*(?=\]))', expand=True)
+    df['coef'] = df['varname'].str.extract(r'((?<=\[).*(?=\]))', expand=True)
     df = df.pivot(index='coef', columns='index', values='value')
     df.reset_index(inplace=True)
     # Remove N of obs. from rows:
@@ -106,11 +106,25 @@ plt.show()
 
 
 #%% Test
-# Import data
-df = pd.read_stata(os.path.join(estsdir,'OLS_Basic1c_All_ltotinc_tc_All.dta'))
-it = pd.read_stata(os.path.join(estsdir,'OLS_Basic1c_All_ltotinc_tc_All.dta'), iterator = True)
-itr.variable_labels()
-df.reset_index(inplace=True)
+# Import and label data:
+file = os.path.join(estsdir,'OLS_Basic2a_All_ltotinc_tc_All.dta')
+reader = pd.io.stata.StataReader(file)
+with reader as f:
+    labs = f.variable_labels()
+
+df = pd.read_stata(dta)
+df = df.rename(index=str, columns=labs)
+
+df
+
+# df = pd.read_stata(os.path.join(estsdir,'OLS_Basic2a_All_ltotinc_tc_All.dta'))
+# labs = pd.io.stata.StataReader(os.path.join(estsdir,'OLS_Basic2a_All_ltotinc_tc_All.dta')).variable_labels()
+
+
+
+
+# itr = pd.read_stata(os.path.join(estsdir,'OLS_Basic2a_All_ltotinc_tc_All.dta'), iterator = True)
+# df = df.rename(index=str, columns = itr.variable_labels())
 
 
 
