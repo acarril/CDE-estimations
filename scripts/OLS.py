@@ -75,7 +75,7 @@ df = df.rename(index=str, columns = itr.variable_labels())
 df = ReshapeUnstacked(df)
 
 ## Plots
-fig = plt.figure()
+
 # Plot subset of coefficients
 coefs = ['math', 'math2', 'read', 'read2', 'exp', 'exp2', '1.Type', '2.Type', '3.Type']
 df2 = df[(df.coef.isin(coefs)) ]
@@ -94,19 +94,23 @@ df2.rename(index=str, columns={0:'Ucode'}, inplace=True)
 df2['Ucode'] = df2['Ucode'].astype(int)
 df2 = df2.merge(UList, left_on='Ucode', right_on='Ucode', how='left')
 
+plt.figure(figsize=(10,5))
 plt.errorbar(x=df2.beta, y=df2.Uname, xerr=df2.se*zscore, ls='none', marker='o')
 plt.axvline(x=0, linewidth=1, color='grey')
 plt.tight_layout()
+ax = plt.axes()
+ax.yaxis.grid()
 plt.show()
 
 
 
 
-
-
-
-
-
+#%% Test
+# Import data
+df = pd.read_stata(os.path.join(estsdir,'OLS_Basic1c_All_ltotinc_tc_All.dta'))
+it = pd.read_stata(os.path.join(estsdir,'OLS_Basic1c_All_ltotinc_tc_All.dta'), iterator = True)
+itr.variable_labels()
+df.reset_index(inplace=True)
 
 
 
