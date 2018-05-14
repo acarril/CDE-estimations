@@ -65,6 +65,51 @@ Area_labels = ["Business and Administration",
 
 ################################################################################
 
+#%% TEST RD
+
+for idx,samp in enumerate(['Clore', 'VeryClose']):
+    # Read data and import dict of variable labels:
+    dta = os.path.join(estsdir, 'Target_1a_wSample'+sample+'RD_sAll_vltotinc_tc_gAll.dta')
+    reader = pd.io.stata.StataReader(dta)
+    with reader as f:
+        labs = f.variable_labels()
+
+    # Replace empty values in labs dict with original varname
+    for key, value in labs.items():
+        if not value:
+            labs.update({key: key})
+
+    # Create dataframe and apply value labels
+    df = pd.read_stata(dta)
+    df = df.rename(index=str, columns=labs)
+    reader.close()
+
+    # Plot admit coefficients over target Area, by Sample
+    plt.errorbar(df['_b[admit]'], df.index.astype(float)+0.1, xerr=df['_se[admit]'], marker='o', ls='none')
+    plt.axvline(x=0, linewidth=1, color='grey')
+    plt.yticks(df.index.astype(float), Area_labels)
+
+
+
+plt.show()
+
+# itr = pd.read_stata(os.path.join(estsdir,'OLS_Basic1b_All_ltotinc_tc_All.dta'), iterator = True)
+# itr.variable_labels()
+# df.reset_index(inplace=True)
+# # Plot coefficients
+# for degree in ['','2']:
+#     # math and read in same graph:
+#     for idx,coef in enumerate(['math', 'read']):
+#         plt.errorbar(df['_b_'+coef+degree], df.index+idx/5, xerr=df['_se_'+coef+degree]*zscore, marker='o', ls='none', label=coef+degree, alpha=0.7)
+#         plt.axvline(x=0, linewidth=1, color='grey')
+#         plt.yticks(df.index, Area_labels)
+#         plt.legend()
+#         plt.tight_layout()
+#     plt.show()
+
+
+
+
 
 
 #%% 2a
