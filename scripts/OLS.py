@@ -3,14 +3,15 @@
 # Modules:
 import math
 import os
+import warnings
 
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import scipy as sp
 import scipy.stats as st
 import seaborn as sns
-import warnings
 import statsmodels.formula.api as sm
 from IPython.display import HTML
 from matplotlib import cbook, colors
@@ -66,8 +67,13 @@ Area_labels = ["Business and Administration",
 ################################################################################
 
 
-for type in range(1,5):
+for type in (0,1):
     print(type)
+
+df[df['tArea']==2]
+
+
+list(df)
 
 #%% Plot admit coefficient by sample
 for type in range(1,5):
@@ -86,12 +92,14 @@ for type in range(1,5):
         df = df.rename(index=str, columns=labs)
         reader.close()
         # Plot admit coefficients over target Area, by Sample
-        y = df.index.astype(float) + 0.1 - 0.2*idx
-        plt.errorbar(df['_b[Type_1_x_admit]'], y, xerr=df['_se[Type_1_x_admit]'], marker='o', ls='none', label=samp)
+        y = df['tArea']
+        plt.errorbar(df['_b[Type_'+str(type)+'_x_admit]'], y, xerr=df['_se[Type_'+str(type)+'_x_admit]'], marker='o', ls='none', label=samp)
         plt.axvline(x=0, linewidth=1, color='grey')
-        plt.yticks(df.index.astype(float), Area_labels)
+        # plt.yticks(df.index.astype(float), Area_labels)
         plt.legend()
-    plt.title('$admit$ over Target Area, by sample')
+    plt.title(r'$admit \cdot $'+str(type)+'.$Type$')
+    ax = plt.axes()
+    ax.yaxis.grid()
     plt.show()
     plt.close()
 
