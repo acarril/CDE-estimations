@@ -65,33 +65,35 @@ Area_labels = ["Business and Administration",
 
 ################################################################################
 
-#%% TEST RD
 
-for idx,samp in enumerate(['Clore', 'VeryClose']):
-    # Read data and import dict of variable labels:
-    dta = os.path.join(estsdir, 'Target_1a_wSample'+sample+'RD_sAll_vltotinc_tc_gAll.dta')
-    reader = pd.io.stata.StataReader(dta)
-    with reader as f:
-        labs = f.variable_labels()
+for type in range(1,5):
+    print(type)
 
-    # Replace empty values in labs dict with original varname
-    for key, value in labs.items():
-        if not value:
-            labs.update({key: key})
-
-    # Create dataframe and apply value labels
-    df = pd.read_stata(dta)
-    df = df.rename(index=str, columns=labs)
-    reader.close()
-
-    # Plot admit coefficients over target Area, by Sample
-    plt.errorbar(df['_b[admit]'], df.index.astype(float)+0.1, xerr=df['_se[admit]'], marker='o', ls='none')
-    plt.axvline(x=0, linewidth=1, color='grey')
-    plt.yticks(df.index.astype(float), Area_labels)
-
-
-
-plt.show()
+#%% Plot admit coefficient by sample
+for type in range(1,5):
+    for idx,samp in enumerate(['Close', 'VeryClose']):
+        # Read data and import dict of variable labels:
+        dta = os.path.join(estsdir, 'Target_1b_wSample'+samp+'RD_sAll_vltotinc_tc_gAll.dta')
+        reader = pd.io.stata.StataReader(dta)
+        with reader as f:
+            labs = f.variable_labels()
+        # Replace empty values in labs dict with original varname
+        for key, value in labs.items():
+            if not value:
+                labs.update({key: key})
+        # Create dataframe and apply value labels
+        df = pd.read_stata(dta)
+        df = df.rename(index=str, columns=labs)
+        reader.close()
+        # Plot admit coefficients over target Area, by Sample
+        y = df.index.astype(float) + 0.1 - 0.2*idx
+        plt.errorbar(df['_b[Type_1_x_admit]'], y, xerr=df['_se[Type_1_x_admit]'], marker='o', ls='none', label=samp)
+        plt.axvline(x=0, linewidth=1, color='grey')
+        plt.yticks(df.index.astype(float), Area_labels)
+        plt.legend()
+    plt.title('$admit$ over Target Area, by sample')
+    plt.show()
+    plt.close()
 
 # itr = pd.read_stata(os.path.join(estsdir,'OLS_Basic1b_All_ltotinc_tc_All.dta'), iterator = True)
 # itr.variable_labels()
