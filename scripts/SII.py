@@ -107,7 +107,7 @@ for courses in ['Cquant','Pquant']:
     sns.kdeplot(df.loc[df['{0}_group'.format(courses)]=='High'].beta, ax=ax, shade=True, label='High');
     ax.set_xlabel('Career-University FE')
     ax.legend(title=courses+' terciles:')
-    plt.savefig('figs/FL-FE-by{0}3.png'.format(courses))
+    plt.savefig(f'figs/FL-FE-by{courses}_q3.png')
 
 #%% Plot FL-FE of all areas by Cquant,Pquant median
 for courses in ['Cquant','Pquant']:
@@ -117,7 +117,7 @@ for courses in ['Cquant','Pquant']:
     sns.kdeplot(df.loc[df['{0}_group'.format(courses)]=='High'].beta, ax=ax, shade=True, label='High');
     ax.set_xlabel('Career-University FE')
     ax.legend(title=courses+' groups:')
-    plt.savefig('figs/FL-FE-by{0}2.png'.format(courses))
+    plt.savefig(f'figs/FL-FE-by{courses}_q2.png')
 
 #%% Plot FL-FE of subset of areas by Cquant,Pquant median
 for key,value in {k: areas[k] for k in (1,2,10,11)}.items():
@@ -130,7 +130,7 @@ for key,value in {k: areas[k] for k in (1,2,10,11)}.items():
         ax.set_xlabel('Career-University FE')
         ax.set_title('{0}'.format(value))
         ax.legend(title=courses+' groups:')
-        plt.savefig(f'figs/FL-FE-by{courses}-Area{key}.png')
+        plt.savefig(f'figs/FL-FE-by{courses}_q2-Area{key}.png')
 
 #%% Plot FL-FE of {areas} by Cquant,Pquant median
 # for key,value in {k: areas[k] for k in (3,7,10,11)}.items():
