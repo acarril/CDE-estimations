@@ -90,14 +90,14 @@ co = co[['FLcode_app','Area','Pquant','Pqual','Cquant','Cqual']].groupby('FLcode
 df = df.merge(right=co, how='right', left_on='FL', right_index=True)
 df.dropna(subset = ['beta'], inplace=True)
 
-#%% Plot FL FE by (subset of) areas
+#%% Plot FL-FE by (subset of) areas
 fig, ax = plt.subplots()
 for area in [3,7,10,11]:
     sns.kdeplot(df.loc[df['Area']==area].beta, ax=ax, shade=True, label=areas.get(area));
 ax.set_xlabel('Career-University FE')
 plt.savefig('figs/FL-FE-byarea.png')
 
-#%% All areas by quant terciles
+#%% Plot FL-FE of all areas by Cquant,Pquant terciles
 # Notes: Cqual and Pqual don't seem to yield good results.
 for courses in ['Cquant','Pquant']:
     df['{0}_group'.format(courses)] = pd.qcut(df[courses], 3, labels=['Low','Medium','High'])
@@ -106,23 +106,21 @@ for courses in ['Cquant','Pquant']:
     sns.kdeplot(df.loc[df['{0}_group'.format(courses)]=='Medium'].beta, ax=ax, shade=True, label='Medium');
     sns.kdeplot(df.loc[df['{0}_group'.format(courses)]=='High'].beta, ax=ax, shade=True, label='High');
     ax.set_xlabel('Career-University FE')
-    ax.set_title('All areas')
     ax.legend(title=courses+' terciles:')
     plt.savefig('figs/FL-FE-by{0}3.png'.format(courses))
 
-#%% All areas by Pquant median
+#%% Plot FL-FE of all areas by Cquant,Pquant median
 for courses in ['Cquant','Pquant']:
     df['{0}_group'.format(courses)] = pd.qcut(df[courses], 2, labels=['Low','High'])
     fig, ax = plt.subplots()
     sns.kdeplot(df.loc[df['{0}_group'.format(courses)]=='Low'].beta, ax=ax, shade=True, label='Low');
     sns.kdeplot(df.loc[df['{0}_group'.format(courses)]=='High'].beta, ax=ax, shade=True, label='High');
     ax.set_xlabel('Career-University FE')
-    ax.set_title('All areas')
     ax.legend(title=courses+' groups:')
     plt.savefig('figs/FL-FE-by{0}2.png'.format(courses))
+#
 
-
-#%%
+#%% Plot FL-FE of {areas} by Cquant,Pquant median
 for key,value in {k: areas[k] for k in (3,7,10,11)}.items():
     df2 = df.loc[df['Area']==key]
     try:
