@@ -122,18 +122,4 @@ for key,value in {k: areas[k] for k in (1,2,10,11)}.items():
         ax.legend(title=courses+' groups:')
         plt.savefig(f'figs/FL-FE-by{courses}_q2-Area{key}.png')
 
-#%% Plot FL-FE of {areas} by Cquant,Pquant median
-# for key,value in {k: areas[k] for k in (3,7,10,11)}.items():
-#     df2 = df.loc[df['Area']==key]
-#     try:
-#         df2['Pquant_group'] = pd.qcut(df2.Pquant, 2, labels=['Low','High'])
-#     except:
-#         pass
-#     else:
-#         fig, ax = plt.subplots()
-#         sns.kdeplot(df2.loc[(df['Area']==key) & (df['Pquant_group']=='Low')].beta, ax=ax, shade=True, label='Low');
-#     #    sns.kdeplot(df2.loc[(df['Area']==key) & (df['Pquant_group']=='Medium')].beta, ax=ax, shade=True, label='Medium');
-#         sns.kdeplot(df2.loc[(df['Area']==key) & (df['Pquant_group']=='High')].beta, ax=ax, shade=True, label='High');
-#         ax.set_xlabel('Career-University FE')
-#         ax.set_title('{0}'.format(value))
-#         plt.savefig('figs/FL-FE-byquant-{0}.png'.format(value))
+#%%
