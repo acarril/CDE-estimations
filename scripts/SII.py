@@ -54,18 +54,8 @@ def ReshapeUnstacked(df):
 zscore = st.norm.ppf(.975) # Note that 1.96 is the zscore inside of which is 95% of the data (ignoring both tails), but st.norm.ppf() gives the zscore which has 95% of the data below it (ignoring only the upper tail).
 estsdir = 'estimations/SII'
 inputsdir = 'inputs'
-Area_labels = ["Business and Administration",
-               "Agriculture",
-               "Architecture and Art",
-               "Natural Sciences",
-               "Social Sciences",
-               "Law",
-               "Education",
-               "Humanities",
-               "Health",
-               "Technology"]
-
 areas = {1:'Business',2:'Agriculture',3:'Architecture and Art',4:'Natural Sciences',5:'Social Sciences',6:'Law',7:'Eduction',8:'Humanities',10:'Health',11:'Technology'}
+
 ################################################################################
 
 # OLS
