@@ -76,6 +76,7 @@ df = df.filter(like='tflcode_b')
 df = df.T
 df['FL'] = df.index.str.extract('(\d+)', expand=False).astype(int)
 df.rename(index=str,columns={0:'beta'}, inplace=True)
+
 # Crosswalk options:
 co = pd.read_stata(os.path.join('inputs','crosswalk_options_April2018.dta'))
 co = co.loc[co['proceso']==2003]
@@ -91,6 +92,7 @@ ax.set_xlabel('Career-University FE')
 plt.savefig('figs/FL-FE-byarea.png')
 
 #%% All areas by quant terciles
+# Notes: Cqual and Pqual don't seem to yield good results.
 for courses in ['Cquant','Pquant']:
     df['{0}_group'.format(courses)] = pd.qcut(df[courses], 3, labels=['Low','Medium','High'])
     fig, ax = plt.subplots()
@@ -98,28 +100,20 @@ for courses in ['Cquant','Pquant']:
     sns.kdeplot(df.loc[df['{0}_group'.format(courses)]=='Medium'].beta, ax=ax, shade=True, label='Medium');
     sns.kdeplot(df.loc[df['{0}_group'.format(courses)]=='High'].beta, ax=ax, shade=True, label='High');
     ax.set_xlabel('Career-University FE')
-    ax.set_ylabel(courses)
     ax.set_title('All areas')
+    ax.legend(title=courses+' terciles:')
     plt.savefig('figs/FL-FE-by{0}3.png'.format(courses))
 
-#%% All areas by Pquant terciles
-df['Pquant_group'] = pd.qcut(df.Pquant, 3, labels=['Low','Medium','High'])
-fig, ax = plt.subplots()
-sns.kdeplot(df.loc[df['Pquant_group']=='Low'].beta, ax=ax, shade=True, label='Low');
-sns.kdeplot(df.loc[df['Pquant_group']=='Medium'].beta, ax=ax, shade=True, label='Medium');
-sns.kdeplot(df.loc[df['Pquant_group']=='High'].beta, ax=ax, shade=True, label='High');
-ax.set_xlabel('Career-University FE')
-ax.set_title('All areas')
-plt.savefig('figs/FL-FE-byquant3.png')
-
 #%% All areas by Pquant median
-df['Pquant_group'] = pd.qcut(df.Pquant, 2, labels=['Low','High'])
-fig, ax = plt.subplots()
-sns.kdeplot(df.loc[df['Pquant_group']=='Low'].beta, ax=ax, shade=True, label='Low');
-sns.kdeplot(df.loc[df['Pquant_group']=='High'].beta, ax=ax, shade=True, label='High');
-ax.set_xlabel('Career-University FE')
-ax.set_title('All areas')
-plt.savefig('figs/FL-FE-byquant2.png')
+for courses in ['Cquant','Pquant']:
+    df['{0}_group'.format(courses)] = pd.qcut(df[courses], 2, labels=['Low','High'])
+    fig, ax = plt.subplots()
+    sns.kdeplot(df.loc[df['{0}_group'.format(courses)]=='Low'].beta, ax=ax, shade=True, label='Low');
+    sns.kdeplot(df.loc[df['{0}_group'.format(courses)]=='High'].beta, ax=ax, shade=True, label='High');
+    ax.set_xlabel('Career-University FE')
+    ax.set_title('All areas')
+    ax.legend(title=courses+' groups:')
+    plt.savefig('figs/FL-FE-by{0}2.png'.format(courses))
 
 
 
