@@ -69,14 +69,20 @@ areas = {1:'Business',2:'Agriculture',3:'Architecture and Art',4:'Natural Scienc
 ################################################################################
 
 # OLS
-#%% Prepare datasets
-# Estimates:
+#%% Prepare dataset with estimated betas and se, merged with crosswalk options
+# Estimated betas:
 df = pd.read_stata(os.path.join(estsdir,'ols_basic0b_all_ltotinc_tc_all.dta'))
 df = df.filter(like='tflcode_b')
 df = df.T
 df['FL'] = df.index.str.extract('(\d+)', expand=False).astype(int)
 df.rename(index=str,columns={0:'beta'}, inplace=True)
-
+# Estimated standard errors:
+df_se = pd.read_stata(os.path.join(estsdir,'ols_basic0b_all_ltotinc_tc_all.dta'))
+df_se = df_se.filter(like='tflcode_se')
+df_se = df_se.T
+df_se['FL'] = df_se.index.str.extract('(\d+)', expand=False).astype(int)
+df_se.rename(index=str,columns={0:'se'}, inplace=True)
+df = df.merge(right=df_se, on='FL')
 # Crosswalk options:
 co = pd.read_stata(os.path.join('inputs','crosswalk_options_April2018.dta'))
 co = co.loc[co['proceso']==2003]
@@ -84,7 +90,7 @@ co = co[['FLcode_app','Area','Pquant','Pqual','Cquant','Cqual']].groupby('FLcode
 df = df.merge(right=co, how='right', left_on='FL', right_index=True)
 df.dropna(subset = ['beta'], inplace=True)
 
-#%% FL FE by (subset of) areas
+#%% Plot FL FE by (subset of) areas
 fig, ax = plt.subplots()
 for area in [3,7,10,11]:
     sns.kdeplot(df.loc[df['Area']==area].beta, ax=ax, shade=True, label=areas.get(area));
@@ -116,7 +122,7 @@ for courses in ['Cquant','Pquant']:
     plt.savefig('figs/FL-FE-by{0}2.png'.format(courses))
 
 
-
+#%%
 for key,value in {k: areas[k] for k in (3,7,10,11)}.items():
     df2 = df.loc[df['Area']==key]
     try:
