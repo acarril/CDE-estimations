@@ -53,7 +53,7 @@ def ReshapeUnstacked(df):
 # Important variables:
 zscore = st.norm.ppf(.975) # Note that 1.96 is the zscore inside of which is 95% of the data (ignoring both tails), but st.norm.ppf() gives the zscore which has 95% of the data below it (ignoring only the upper tail).
 estsdir = 'estimations/SII'
-inputsdir = 'inputs'
+SIIests = os.path.join('estimations','SII')
 areas = {1:'Business',2:'Agriculture',3:'Architecture and Art',4:'Natural Sciences',5:'Social Sciences',6:'Law',7:'Eduction',8:'Humanities',10:'Health',11:'Technology'}
 
 ################################################################################
@@ -61,13 +61,13 @@ areas = {1:'Business',2:'Agriculture',3:'Architecture and Art',4:'Natural Scienc
 # OLS
 #%% Prepare dataset with estimated betas and se, merged with crosswalk options
 # Estimated betas:
-df = pd.read_stata(os.path.join(estsdir,'ols_basic0b_all_ltotinc_tc_all.dta'))
+df = pd.read_stata(os.path.join(SIIests,'ols_basic0b_all_ltotinc_tc_all.dta'))
 df = df.filter(like='tflcode_b')
 df = df.T
 df['FL'] = df.index.str.extract('(\d+)', expand=False).astype(int)
 df.rename(index=str,columns={0:'beta'}, inplace=True)
 # Estimated standard errors:
-df_se = pd.read_stata(os.path.join(estsdir,'ols_basic0b_all_ltotinc_tc_all.dta'))
+df_se = pd.read_stata(os.path.join(SIIests,'ols_basic0b_all_ltotinc_tc_all.dta'))
 df_se = df_se.filter(like='tflcode_se')
 df_se = df_se.T
 df_se['FL'] = df_se.index.str.extract('(\d+)', expand=False).astype(int)
@@ -85,7 +85,7 @@ fig, ax = plt.subplots()
 for area in [3,7,10,11]:
     sns.kdeplot(df.loc[df['Area']==area].beta, ax=ax, shade=True, label=areas.get(area));
 ax.set_xlabel('Career-University FE')
-plt.savefig('figs/FL-FE-byarea.png')
+plt.savefig('figs/FL-FE-byArea.png')
 
 #%% Plot FL-FE of all areas by Cquant,Pquant terciles
 # Notes: Cqual and Pqual don't seem to yield good results.
@@ -123,3 +123,84 @@ for key,value in {k: areas[k] for k in (1,2,10,11)}.items():
         plt.savefig(f'figs/FL-FE-by{courses}_q2-Area{key}.png')
 
 #%%
+
+ols = pd.read_stata(os.path.join('estimations','OLS_Basic1a_All_ltotinc_tc_All.dta'))
+varlabs = pd.io.stata.StataReader(os.path.join('estimations','OLS_Basic1a_All_ltotinc_tc_All.dta')).variable_labels()
+ols.rename(columns=varlabs, inplace=True)
+ols = ols.filter(like='tArea')
+ols = ols.filter(like='_b')
+ols = ols.T
+ols['area'] = ols.index.str.extract('(\d+)')
+ols['area'] = ols['area'].astype(int)
+ols = ols.reset_index(drop=True)
+ols.rename(columns={0:'OLSbeta'}, inplace=True)
+ols.area
+
+from itertools import product
+areas
+df = pd.DataFrame(list(product(areas,areas)), columns=['tArea','snArea'])
+df = df.merge(right=ols, left_on='tArea', right_on='area', copy=False)
+df.rename(columns={'OLSbeta':'b_tArea'}, inplace=True)
+df = df.merge(right=ols, left_on='snArea', right_on='area', copy=False)
+df.rename(columns={'OLSbeta':'b_snArea'}, inplace=True)
+
+df['b_OLS'] = df['b_tArea'] - df['b_snArea']
+df.drop(columns=['area_x','area_y','b_tArea','b_snArea'], inplace=True)
+
+
+
+
+rd = pd.read_stata(os.path.join('estimations','Target_0a_wSampleVeryCloseRD_sAll_vltotinc_tc_gAll.dta'), columns=['tArea','snArea','_b_admit'])
+df = df.merge(right=rd)
+
+df.replace(0, np.nan, inplace=True)
+df.rename(columns={'_b_admit':'b_RD'}, inplace=True)
+
+#df.to_csv(os.path.join('estimations','ols-rd.csv'))
+
+df['b_OLS2'] = df['b_OLS'] + (df['b_RD'] - df['b_OLS'])/3
+
+sel = pd.read_stata(os.path.join('inputs','AreaSelectivity.dta'))
+df = df.merge(right=sel, on='tArea', copy=False)
+df = df.merge(right=sel, left_on='snArea', right_on='tArea', copy=False)
+df['selec'] = df['AveSelectivity_x'] + df['AveSelectivity_y']
+df.drop(columns=['AveSelectivity_x', 'AveSelectivity_y', 'tArea_y'], inplace=True)
+df
+
+df['selec']
+
+2+2
+
+#%%
+g = sns.regplot(x='b_OLS2',y='b_RD', data=df, label='Estimates', line_kws={'label':'Linear fit'})
+g.text(.22,-1.1,'UI data (2000-2003)')
+g.set_xlabel('OLS')
+g.set_ylabel('RD')
+g.set_title('RD by OLS prediction')
+g.plot([1,-1],[1,-1], '--', label='45° line')
+g.legend()
+g.figure.savefig('figs/OLS-RD-prediction.pdf')
+
+#%%
+
+df['selq3'] = pd.qcut(df['selec'], 3, labels=['Low','Medium','High'])
+
+
+for tercile in ['Low','Medium','High']:
+    g = sns.regplot(x='b_OLS2',y='b_RD', data=df[df['selq3']==tercile], label='Estimates', line_kws={'label':'Linear fit'})
+    g.text(.22,-1.1,'UI data (2000-2003)')
+    g.set_xlabel('OLS')
+    g.set_ylabel('RD')
+    g.set_title(f'RD by OLS prediction - {tercile} selectivity')
+    g.plot([1,-1],[1,-1], '--', label='45° line')
+    g.legend()
+    g.figure.savefig(f'figs/OLS-RD-prediction_q3{tercile}.png')
+    g.figure.clf()
+
+df
+
+
+fig = sns.regplot(x='b_OLS2',y='b_RD', data=df.dropna())
+# fig.text(df.b_OLS2[12]+0.2, df.b_RD[12], df.selec[12], horizontalalignment='left')
+for line in range(1, 10):
+    fig.annotate('hola', (df.dropna().b_OLS2[line], df.dropna().b_RD[line]))
